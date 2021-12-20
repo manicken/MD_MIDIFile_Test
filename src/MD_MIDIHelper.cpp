@@ -21,7 +21,6 @@
 */
 #include <string.h>
 #include <MD_MIDIFile.h>
-#include <SD.h>
 #include "MD_MIDIHelper.h"
 
 /**
@@ -29,7 +28,7 @@
  * \brief Main file for helper functions implementation
  */
 
-uint32_t readMultiByte(File *f, uint8_t nLen)
+uint32_t readMultiByte(SdFile *f, uint8_t nLen)
 // read fixed length parameter from input
 {
   uint32_t  value = 0L;
@@ -42,7 +41,7 @@ uint32_t readMultiByte(File *f, uint8_t nLen)
   return(value);
 }
 
-uint32_t readVarLen(File *f)
+uint32_t readVarLen(SdFile *f)
 // read variable length parameter from input
 {
   uint32_t  value = 0;

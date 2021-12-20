@@ -42,7 +42,7 @@
 //#include <SerialFlash.h>
 #define DBG_SERIAL Serial
 
-//#define USE_MIDI  1   // set to 1 to enable MIDI output, otherwise debug output
+#define USE_MIDI  1   // set to 1 to enable MIDI output, otherwise debug output
 
 #if USE_MIDI // set up for direct MIDI serial output
 
@@ -76,6 +76,8 @@ void printDirectory(File dir, File prevDir);
 void printFiles(File dir);
 
 void setup() {
+    SMF.begin(&(SdFat &)SD);
+
 	DBG_SERIAL.begin(115200);
     unsigned long ms = millis();
     while (!DBG_SERIAL) { if ((millis() - ms) > 10000) break; }
@@ -215,11 +217,13 @@ void midiCallback(midi_event *pev)
 #if USE_MIDI
   if ((pev->data[0] >= 0x80) && (pev->data[0] <= 0xe0))
   {
-    Serial.write(pev->data[0] | pev->channel);
-    Serial.write(&pev->data[1], pev->size-1);
+    //Serial.write(pev->data[0] | pev->channel);
+    //Serial.write(&pev->data[1], pev->size-1);
+
+    usbMIDI.send(pev->data[0], pev->data[1],pev->data[2],pev->channel, 0);
   }
-  else
-    Serial.write(pev->data, pev->size);
+  //else
+    //Serial.write(pev->data, pev->size);
 #else
   DEBUG("\n");
   DEBUG(millis());
@@ -321,7 +325,7 @@ void loop()
     if (!SMF.isEOF())
     {
       if (SMF.getNextEvent()){
-          DEBUGS("\nS_PLAYING");
+          //DEBUGS("\nS_PLAYING");
         tickMetronome();
       }
     }

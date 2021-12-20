@@ -85,7 +85,7 @@ bool MD_MFTrack::getNextEvent(MD_MIDIFile *mf, uint16_t tickCount)
     return(false);
 
   // move the file pointer to where we left off
-  mf->_fd.seek(_startOffset+_currOffset);
+  mf->_fd.seekSet(_startOffset+_currOffset);
 
   // Work out new total elapsed ticks - include the overshoot from
   // last event.
@@ -112,7 +112,7 @@ bool MD_MFTrack::getNextEvent(MD_MIDIFile *mf, uint16_t tickCount)
   parseEvent(mf);
 
   // remember the offset for next time
-  _currOffset = mf->_fd.position() - _startOffset;
+  _currOffset = mf->_fd.curPosition() - _startOffset;
 
   // catch end of track when there is no META event  
   _endOfTrack = _endOfTrack || (_currOffset >= _length);
@@ -224,7 +224,7 @@ void MD_MFTrack::parseEvent(MD_MIDIFile *mf)
     for (uint16_t i=index; i<minLen; ++i)
       sev.data[i] = mf->_fd.read();
     if (sev.size>minLen)
-      mf->_fd.seek(sev.size-minLen);
+      mf->_fd.seekCur(sev.size-minLen);
 
 #if DUMP_DATA
     DUMPS("[SYSX] Data:");
@@ -288,7 +288,7 @@ void MD_MFTrack::parseEvent(MD_MIDIFile *mf)
         uint8_t d = mf->_fd.read();
         
         mf->setTimeSignature(n, 1 << d);  // denominator is 2^n
-        mf->_fd.seek(mLen - 2);
+        mf->_fd.seekCur(mLen - 2);
 
         mev.data[0] = n;
         mev.data[1] = d;
@@ -421,7 +421,7 @@ void MD_MFTrack::parseEvent(MD_MIDIFile *mf)
 
         mev.chars[minLen] = '\0'; // in case it is a string
         if (mLen > ARRAY_SIZE(mev.data))
-          mf->_fd.seek(mLen-ARRAY_SIZE(mev.data));
+          mf->_fd.seekCur(mLen-ARRAY_SIZE(mev.data));
   //    DUMPS("IGNORED");
       }
       break;
@@ -454,7 +454,7 @@ int MD_MFTrack::load(uint8_t trackId, MD_MIDIFile *mf)
   {
     char    h[MTRK_HDR_SIZE+1]; // Header characters + nul
   
-    mf->_fd.read(h, MTRK_HDR_SIZE);
+    mf->_fd.fgets(h, MTRK_HDR_SIZE+1);
     h[MTRK_HDR_SIZE] = '\0';
 
     if (strcmp(h, MTRK_HDR) != 0)
@@ -467,11 +467,11 @@ int MD_MFTrack::load(uint8_t trackId, MD_MIDIFile *mf)
   _length = dat32;
 
   // save where we are in the file as this is the start of offset for this track
-  _startOffset = mf->_fd.position();
+  _startOffset = mf->_fd.curPosition();
   _currOffset = 0;
 
   // Advance the file pointer to the start of the next track;
-  if (!mf->_fd.seek(_startOffset+_length))
+  if (!mf->_fd.seekSet(_startOffset+_length))
     return(1);
 
   return(-1);

@@ -369,7 +369,7 @@ http://www.stephenhobley.com/blog/2011/03/14/the-last-darned-midi-interface-ill-
 #define _MDMIDIFILE_H
 
 #include <Arduino.h>
-#include <SD.h>
+#include <SdFat.h>
 
 /**
  * \file
@@ -899,8 +899,8 @@ public:
    * \param apath pointer to a string with the path name.
    * \return No return data.
    */
-  /*void setFileFolder(const char* apath) { if (apath != nullptr && _sd->chdir(apath)) _sd->chvol(); }
-*/
+  void setFileFolder(const char* apath) { if (apath != nullptr && _sd->chdir(apath)) _sd->chvol(); }
+
   /** 
    * Load the named SMF
    *
@@ -1160,8 +1160,8 @@ protected:
 
   // file handling
   uint8_t   _selectSD;          ///< SDFat select line
-  //SdFat     *_sd;               ///< SDFat library descriptor supplied by calling program
-  File    _fd;                ///< SDFat file descriptor
+  SdFat     *_sd;               ///< SDFat library descriptor supplied by calling program
+  SdFile    _fd;                ///< SDFat file descriptor
   MD_MFTrack   _track[MIDI_MAX_TRACKS]; ///< the track data for this file
 };
 

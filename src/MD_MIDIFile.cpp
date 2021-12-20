@@ -21,7 +21,6 @@
 */
 
 #include <string.h>
-#include <SD.h>
 #include "MD_MIDIFile.h"
 #include "MD_MIDIHelper.h"
 
@@ -44,7 +43,7 @@ void MD_MIDIFile::initialise(void)
 
   // File handling
   setFilename("");
-  //_sd = nullptr;
+  _sd = nullptr;
 
   // Set MIDI specified standard defaults
   setTicksPerQuarterNote(48); // 48 ticks per quarter note
@@ -75,7 +74,7 @@ MD_MIDIFile::~MD_MIDIFile()
 
 void MD_MIDIFile::begin(SdFat *psd)
 {
-  //_sd = psd;
+  _sd = psd;
 }
 
 void MD_MIDIFile::close()
@@ -294,24 +293,19 @@ int MD_MIDIFile::load(const char *fname)
   
   if ((_fileName == nullptr) || (*_fileName == '\0'))
     return(E_NO_FILE);
-  
+
   // open the file for reading
-  _fd = SD.open(_fileName);
-  if (!_fd)
+  if (!_fd.open(_fileName, O_READ)) 
     return(E_NO_OPEN);
-  
- // if (!_fd.open(_fileName, O_READ)) 
- //   return(E_NO_OPEN);
 
   // Read the MIDI header
   // header chunk = "MThd" + <header_length:4> + <format:2> + <num_tracks:2> + <time_division:2>
   {
     char    h[MTHD_HDR_SIZE+1]; // Header characters + nul
 
-    //_fd.fgets(h, MTHD_HDR_SIZE+1);
-    _fd.read(h, MTHD_HDR_SIZE);
+    _fd.fgets(h, MTHD_HDR_SIZE+1);
     h[MTHD_HDR_SIZE] = '\0';
-    Serial.println(h);
+
     if (strcmp(h, MTHD_HDR) != 0)
     {
       _fd.close();
@@ -321,7 +315,6 @@ int MD_MIDIFile::load(const char *fname)
 
   // read header size
   dat32 = readMultiByte(&_fd, MB_LONG);
-  Serial.printf("%#08x\n", dat32);
   if (dat32 != 6)   // must be 6 for this header
   {
     _fd.close();
@@ -370,7 +363,7 @@ int MD_MIDIFile::load(const char *fname)
   } 
   _ticksPerQuarterNote = dat16;
   calcTickTime();  // we may have changed from default, so recalculate
-Serial.printf("trackcount:%d", _trackCount);
+
   // load all tracks
   for (uint8_t i = 0; i<_trackCount; i++)
   {
@@ -378,7 +371,6 @@ Serial.printf("trackcount:%d", _trackCount);
 
     if ((err = _track[i].load(i, this)) != -1)
     {
-        Serial.printf("error at track:%d", i);
       _fd.close();
       return((10*(i+1))+err);
     }
