@@ -33,7 +33,7 @@
  *   "C:\Program Files (x86)\Arduino\hardware\tools\arm\bin\arm-none-eabi-addr2line" -e 
  */
 
-#include <MD_MIDIFile.h>
+#include "MD_MIDIFile.h"
 
 #include <Audio.h>
 #include <Wire.h>
@@ -85,11 +85,11 @@ void setup() {
     //-------------------------------
     AudioMemory(50); // no idea what we'll need, so allow plenty
     //-------------------------------
-    if (CrashReport && DBG_SERIAL)
+   /* if (CrashReport && DBG_SERIAL)
     {
         DBG_SERIAL.println(CrashReport);
         CrashReport.clear();
-    }
+    }*/
 
     while (!(SD.begin(BUILTIN_SDCARD))) 
     {
